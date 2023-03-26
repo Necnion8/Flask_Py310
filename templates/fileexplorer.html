@@ -1,0 +1,37 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>{{Path(cwd).name or "/"}} - File Explorer</title>
+
+</head>
+
+<body>
+    <div class="filedir">
+        <h3>File Explorer - /{{cwd.lstrip(".")}}</h3>
+
+        <form action="./fio?d={{cwd}}" method="POST" enctype="multipart/form-data">
+            <input type="file" name="file">
+            <input type="submit" value="アップロード">
+        </form>
+
+        <ul>
+            {% if cwd != "." %}
+                <li>D. <a href="?p={{Path(cwd).parent.as_posix()}}">親ディレクトリ..</a></li>
+            {% else %}
+                <li>D. 親ディレクトリ..</li>
+            {% endif %}
+
+            {% for child in sorted_iterdir(root / cwd) %}
+                {% if child.is_dir() %}
+                    <li>D. <a href="?p={{cwd + "/" + child.name}}">{{child.name}}</a></li>
+                {% else %}
+                    <li>F. <a href="./fio?p={{cwd + "/" + child.name}}">{{child.name}}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+</body>
+
+</html>
