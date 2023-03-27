@@ -5,19 +5,12 @@ from http import HTTPStatus
 from pathlib import Path
 
 from flask import Flask, render_template, request, redirect, Response, send_file
-from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
 
-from serverprocess import ServerProcess
-
 app = Flask(__name__)
-sio = SocketIO(app, cors_allowed_origins="*")  # 実際の設定に
 
 # ファイルエクスプローラのRootディレクトリ (これより上の階層には移動できない(はず))
 FILE_EXPLORER_ROOT = Path("D:\\Minecraft Launcher 4").resolve()
-
-test_server = ServerProcess("java", "-Xmx128M", "-Xms128M", "-jar", "paper-1.8.8-445.jar",
-                            cwd="P:\\tmpTinySpigot")
 
 
 def is_safe_path(path: Path):
@@ -184,37 +177,5 @@ def file_copy():
     return redirect(f"./fileexplorer?p={current_dir.as_posix()}")
 
 
-@app.route("/console")
-def console():
-    return render_template("console.html")
-
-
-@sio.on("connect")
-def _ws_connect(_):
-    # hard split
-    data = test_server.stdin_content[-1000 * 1000:].decode("utf-8", errors="ignore")
-    emit("term_data", dict(raw=data))
-
-
-@sio.on("disconnect")
-def _ws_disconnect():
-    pass
-
-
-@sio.on("term_send_text")
-def _ws_term_send_text(data):
-    text = data["text"].strip()
-    if not text:
-        return
-    emit("term_data", dict(raw=f"[WebConsole]: /{text}\n\r"), broadcast=True)
-    test_server.write(text + "\n")
-
-
 if __name__ == "__main__":
-    def _send(data: bytes):
-        sio.emit("term_data", dict(raw=data.decode("utf-8")))
-
-    test_server.add_stdin_listener(_send)
-    test_server.start()
-
-    sio.run(app, debug=False, use_evalex=False, allow_unsafe_werkzeug=True)
+    app.run()
