@@ -88,7 +88,27 @@ def file_io():
       DELETE ./?p=(削除するファイルのパス)
     """
     if request.method == "DELETE":  # delete
-        return Response("Not implemented", status=HTTPStatus.SERVICE_UNAVAILABLE)
+        # 引数の確認
+        path = request.args.get("p")  # 削除するファイルパスを指定
+        if not path:
+            return Response("Path not specified", status=HTTPStatus.BAD_REQUEST)
+
+        # パスの確認
+        path = Path(path)
+        if not is_safe_path(path) or not path.exists():
+            return Response("Invalid path", status=HTTPStatus.FORBIDDEN)
+
+        try:
+            if path.is_dir():
+                shutil.rmtree(FILE_EXPLORER_ROOT / path)
+            else:
+                os.remove(FILE_EXPLORER_ROOT / path)
+        except Exception:
+            raise
+
+        # 問題がなければ、削除ファイルの元フォルダを開かせる
+        current_dir = normalize_path(path)
+        return redirect(f"./fileexplorer?p={current_dir.as_posix()}")
 
     elif request.method == "POST":  # upload
         # 引数の確認
