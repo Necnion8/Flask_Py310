@@ -148,6 +148,42 @@ def file_io():
         return send_file(FILE_EXPLORER_ROOT / path, mimetype=mimetypes.guess_extension(path.name))
 
 
+@app.route("/fcp")
+def file_copy():
+    """
+    ファイルのコピー
+
+    引数:
+      GET ./?s=(コピー元)&d=(コピー先)
+    """
+    # 引数の確認
+    source_path = request.args.get("s")  # コピー元のパス
+    to_path = request.args.get("d")  # コピー先のパス
+
+    if not source_path:
+        return Response("Path(s) not specified", status=HTTPStatus.BAD_REQUEST)
+    if not to_path:
+        return Response("Path(d) not specified", status=HTTPStatus.BAD_REQUEST)
+
+    # パスの確認
+    source_path = Path(source_path)
+    if not is_safe_path(source_path) or not source_path.is_file():
+        return Response("Invalid source(s) path", status=HTTPStatus.FORBIDDEN)
+    to_path = Path(to_path)
+    if not is_safe_path(to_path) or not to_path.is_file():
+        return Response("Invalid destination(d) path", status=HTTPStatus.FORBIDDEN)
+
+    # ファイルのコピー
+    try:
+        shutil.copy(FILE_EXPLORER_ROOT / source_path, FILE_EXPLORER_ROOT / to_path)
+    except Exception:
+        raise
+
+    # 問題がなければ、コピー先ファイルのフォルダを開かせる
+    current_dir = normalize_path(to_path.parent)
+    return redirect(f"./fileexplorer?p={current_dir.as_posix()}")
+
+
 @app.route("/console")
 def console():
     return render_template("console.html")
