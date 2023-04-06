@@ -6,7 +6,8 @@ from flask import Flask, render_template, request, redirect, Response, send_file
 from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
 
-from serverprocess import ServerProcess
+# from serverprocess import ServerProcess
+from serverprocess_pty import ServerProcess
 
 app = Flask(__name__)
 sio = SocketIO(app, cors_allowed_origins="*")  # 実際の設定に
@@ -148,7 +149,6 @@ def _ws_term_send_text(data):
     text = data["text"].strip()
     if not text:
         return
-    emit("term_data", dict(raw=f"[WebConsole]: /{text}\n\r"), broadcast=True)
     test_server.write(text + "\n")
 
 
