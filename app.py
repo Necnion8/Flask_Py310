@@ -1,4 +1,3 @@
-import asyncio
 import mimetypes
 from http import HTTPStatus
 from pathlib import Path
@@ -135,7 +134,7 @@ def console():
 @sio.on("connect")
 def _ws_connect(_):
     # hard split
-    data = test_server.stdin_content[-1000 * 1000:].decode("utf-8", errors="ignore")
+    data = test_server.stdout_content[-1000 * 1000:].decode("utf-8", errors="ignore")
     emit("term_data", dict(raw=data))
 
 
@@ -157,7 +156,7 @@ if __name__ == "__main__":
     def _send(data: bytes):
         sio.emit("term_data", dict(raw=data.decode("utf-8")))
 
-    test_server.add_stdin_listener(_send)
+    test_server.add_stdout_listener(_send)
     test_server.start()
 
     sio.run(app, debug=False, use_evalex=False, allow_unsafe_werkzeug=True)
