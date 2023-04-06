@@ -12,10 +12,10 @@ app = Flask(__name__)
 sio = SocketIO(app, cors_allowed_origins="*")  # 実際の設定に
 
 # ファイルエクスプローラのRootディレクトリ (これより上の階層には移動できない(はず))
-FILE_EXPLORER_ROOT = Path("D:\\Minecraft Launcher 4").resolve()
+FILE_EXPLORER_ROOT = Path("../").resolve()
 
-test_server = ServerProcess("java", "-Xmx128M", "-Xms128M", "-jar", "paper-1.8.8-445.jar",
-                            cwd="P:\\tmpTinySpigot")
+args = ["screen", "-S", "testSpigot", "java", "-Xmx256M", "-Xms256M", "-jar", "paper-1.8.8-445.jar"]
+test_server = ServerProcess(*args, cwd="../")
 
 
 def is_safe_path(path: Path):
